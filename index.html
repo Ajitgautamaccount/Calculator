@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Growth & Compound Interest Analyzer - Ajit Gautam</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PWA Manifest and Theme Colors -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#28a745">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Inv. Analyzer">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+
+    <style>
+        /* Global Styles */
+        :root {
+            --primary-color: #28a745; /* Green for accents */
+            --primary-color-dark: #218838; /* Darker Green for hover */
+            --primary-color-header: #d4edda; /* Very light green for header background */
+            --primary-color-rgb: 40, 167, 69; /* RGB for box-shadow transparency (green) */
+            --secondary-color: #fd7e14; /* Orange for secondary elements */
+            --secondary-color-dark: #e06c0f; /* Darker Orange for hover */
+            --background-light: #f8f9fa;
+            --background-white: #ffffff;
+            --text-dark: #343a40;
+            --text-muted: #6c757d;
+            --border-light: #dee2e6;
+            --border-medium: #ced4da;
+            --shadow-light: 0 2px 8px rgba(0,0,0,0.05); /* Original light shadow */
+            --shadow-3d-card: 0 6px 12px rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.1); /* New, more pronounced shadow for cards */
+            --border-radius-card: 8px; /* Smaller radius */
+            --border-radius-input: 4px; /* Smaller radius */
+            --transition-speed: 0.2s ease-in-out;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--background-light);
+            color: var(--text-dark);
+            line-height: 1.4; /* Tighter line height */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Header Section */
+        .app-header {
+            background-color: var(--primary-color-header); /* Lighter green for header */
+            color: var(--text-dark); /* Dark text for contrast */
+            padding: 10px 12px; /* Further reduced padding */
+            text-align: center;
+            margin-bottom: 10px; /* Further reduced margin */
+            box-shadow: var(--shadow-light);
+            border-bottom: 1px solid var(--primary-color); /* Green border */
+        }
+
+        .app-header h1 {
+            margin: 0;
+            font-size: 1.4em; /* Further reduced font size */
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: var(--primary-color-dark); /* Use a slightly darker accent for title */
+        }
+
+        .app-header p {
+            margin-top: 3px; /* Further reduced margin */
+            font-size: 0.8em; /* Further reduced font size */
+            opacity: 0.85;
+            color: var(--text-dark);
+        }
+
+        /* Main Layout */
+        .container {
+            display: grid;
+            grid-template-columns: 0.3fr 0.7fr; /* Adjusted for 30% input, 70% summary */
+            grid-template-rows: auto auto auto auto; /* Explicitly define rows for better control */
+            gap: 15px; /* Further reduced gap */
+            padding: 0 10px 15px; /* Further reduced padding */
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Card Styling for Sections */
+        .input-section,
+        .summary-section,
+        .graph-section,
+        .table-section,
+        .bar-chart-summary-section {
+            background: var(--background-white);
+            padding: 15px; /* Further reduced padding */
+            border-radius: var(--border-radius-card);
+            box-shadow: var(--shadow-3d-card); /* Use the new 3D card shadow */
+            transition: transform 0.2s ease;
+            min-height: 150px; /* Ensure a minimum height for all card sections */
+        }
+
+        .input-section:hover,
+        .summary-section:hover,
+        .graph-section:hover,
+        .table-section:hover,
+        .bar-chart-summary-section:hover {
+            transform: translateY(-2px); /* Slightly less lift */
+        }
+
+        h2 {
+            color: var(--primary-color-dark); /* Use primary green for titles */
+            font-size: 1.2em; /* Further reduced font size */
+            margin-top: 0;
+            margin-bottom: 10px; /* Further reduced margin */
+            padding-bottom: 6px; /* Further reduced padding */
+            border-bottom: 1px solid var(--border-light);
+            font-weight: 600;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 10px; /* Further reduced margin */
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 3px; /* Further reduced margin */
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.85em; /* Further reduced font size */
+        }
+        .form-group input[type="number"] {
+            width: 100%;
+            padding: 6px 8px; /* Further reduced padding */
+            border: 1px solid var(--border-medium);
+            border-radius: var(--border-radius-input);
+            font-size: 0.85em; /* Further reduced font size */
+            color: var(--text-dark);
+            transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+            /* 3D effect for input fields */
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1), 0 1px 0 rgba(255,255,255,0.5);
+        }
+        .form-group input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.25); /* Focus overrides subtle 3D shadow */
+        }
+
+        /* Radio button specific styles */
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px; /* Space between radio options */
+            margin-top: 5px;
+        }
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            font-weight: normal; /* Override form-group label font-weight */
+            font-size: 0.85em;
+            cursor: pointer;
+            margin-bottom: 0; /* Remove bottom margin from individual radio labels */
+        }
+        .radio-group input[type="radio"] {
+            width: auto; /* Allow radio buttons to take natural width */
+            margin-right: 5px;
+            box-shadow: none; /* Remove 3D effect from radio buttons themselves */
+            border: 1px solid var(--border-medium); /* Add border for consistency */
+            appearance: none; /* Hide default radio button */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            outline: none;
+            cursor: pointer;
+            position: relative;
+            background-color: var(--background-white);
+            transition: all var(--transition-speed);
+        }
+        .radio-group input[type="radio"]:checked {
+            border-color: var(--primary-color);
+            background-color: var(--primary-color);
+        }
+        .radio-group input[type="radio"]:checked::before {
+            content: '';
+            display: block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--background-white);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .radio-group input[type="radio"]:focus {
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.25);
+        }
+
+        /* Rate Input Group (for common frequency select now) */
+        .rate-input-group {
+            display: flex;
+            gap: 6px; /* Further reduced gap */
+            align-items: center;
+        }
+        .rate-input-group input {
+            flex-grow: 1;
+        }
+
+        /* New grid for rate scenarios */
+        .rate-scenarios-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Two columns for rates */
+            gap: 15px; /* Gap between the form groups */
+            margin-bottom: 10px; /* Margin for the whole row of rates */
+        }
+        .rate-scenarios-grid .form-group {
+            margin-bottom: 0; /* Remove individual bottom margin when in a grid cell */
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            margin-top: 12px; /* Further reduced margin */
+            display: flex;
+            gap: 8px; /* Further reduced gap */
+            justify-content: flex-start;
+        }
+        /* Adjusted for table-section action buttons to be left-aligned on mobile */
+        .table-section .action-buttons {
+            justify-content: flex-start; /* Changed from flex-end */
+            margin-bottom: 12px; /* Further reduced margin */
+        }
+        
+        .btn {
+            padding: 6px 15px; /* Further reduced padding */
+            border: none;
+            border-radius: var(--border-radius-input);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8em; /* Further reduced font size */
+            transition: all var(--transition-speed);
+            /* 3D effect for buttons */
+            box-shadow: 0 4px 0 var(--primary-color-dark), 0 2px 4px rgba(0,0,0,0.2); /* Bottom shadow for depth */
+            transform: translateY(0);
+        }
+        .btn-primary {
+            background: var(--primary-color);
+            color: var(--background-white);
+            box-shadow: 0 4px 0 var(--primary-color-dark), 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-color-dark);
+            transform: translateY(-2px); /* Lift effect */
+            box-shadow: 0 6px 0 var(--primary-color-dark), 0 4px 8px rgba(0,0,0,0.3); /* Enhanced shadow */
+        }
+        .btn-primary:active {
+            transform: translateY(1px); /* Press down effect */
+            box-shadow: 0 2px 0 var(--primary-color-dark), 0 1px 2px rgba(0,0,0,0.2); /* Reduced shadow */
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: var(--background-white);
+            box-shadow: 0 4px 0 var(--secondary-color-dark), 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .btn-secondary:hover {
+            background-color: var(--secondary-color-dark);
+            transform: translateY(-2px); /* Lift effect */
+            box-shadow: 0 6px 0 var(--secondary-color-dark), 0 4px 8px rgba(0,0,0,0.3); /* Enhanced shadow */
+        }
+        .btn-secondary:active {
+            transform: translateY(1px); /* Press down effect */
+            box-shadow: 0 2px 0 var(--secondary-color-dark), 0 1px 2px rgba(0,0,0,0.2); /* Reduced shadow */
+        }
+
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto; /* Enable horizontal scrolling for tables on small screens */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            margin-top: 8px;
+        }
+
+        .summary-table,
+        .detailed-table {
+            width: 100%; /* Ensure table takes full width of its container */
+            min-width: 500px; /* Prevent table from shrinking too much, force scroll if needed */
+            border-collapse: collapse;
+            font-size: 0.75em; /* Further reduced font size */
+        }
+        .summary-table th, 
+        .summary-table td,
+        .detailed-table th, 
+        .detailed-table td {
+            padding: 6px 10px; /* Further reduced padding */
+            text-align: right; /* Default for numerical data and numerical headers */
+            border-bottom: 1px solid var(--border-light);
+            white-space: nowrap; /* Prevent text wrapping in table cells */
+        }
+        .summary-table thead th,
+        .detailed-table thead th {
+            background-color: #e9ecef;
+            color: var(--text-dark);
+            font-weight: 700;
+            border-bottom: 2px solid var(--border-medium);
+        }
+        .summary-table th:first-child,
+        .summary-table td:first-child,
+        .detailed-table th:first-child,
+        .detailed-table td:first-child {
+            text-align: left; /* First column (Scenario/Year) is left-aligned */
+        }
+
+        .summary-table tbody tr:nth-child(even),
+        .detailed-table tbody tr:nth-child(even) {
+            background-color: #f7f7f7;
+        }
+        .summary-table tbody tr:hover,
+        .detailed-table tbody tr:hover {
+            background-color: var(--primary-color-header); /* Light green on hover */
+        }
+
+        /* Chart Sections */
+        .chart-container {
+            position: relative;
+            height: 220px; /* Significantly reduced height */
+            width: 100%;
+            margin-top: 8px; /* Further reduced margin */
+        }
+
+        /* Breakdown controls for detailed table */
+        .breakdown-controls {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .breakdown-controls label {
+            font-size: 0.85em;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-right: 5px;
+        }
+        .breakdown-controls .btn {
+            padding: 5px 10px;
+            font-size: 0.75em;
+            background-color: #e9ecef;
+            color: var(--text-dark);
+            box-shadow: none; /* Override 3D shadow for these smaller buttons */
+            border: 1px solid var(--border-medium);
+            transform: none; /* Override transform for these smaller buttons */
+        }
+        .breakdown-controls .btn.active {
+            background-color: var(--primary-color);
+            color: var(--background-white);
+            border-color: var(--primary-color);
+        }
+        .breakdown-controls .btn:hover:not(.active) {
+            background-color: #dee2e6;
+            transform: none; /* Ensure no transform on hover for these buttons */
+            box-shadow: none;
+        }
+
+        /* Summary Tabs Spacing */
+        .summary-tabs .tab-button {
+            margin-right: 8px; /* Added space between tabs */
+            margin-bottom: 5px; /* For wrapping on smaller screens */
+        }
+
+        /* Explicit Grid Placement for Sections */
+        .input-section {
+            grid-column: 1 / 2; /* First column */
+            grid-row: 1 / span 2; /* Spans two rows (row 1 and row 2) */
+        }
+        .summary-section:first-of-type { /* The main summary table section */
+            grid-column: 2 / 3; /* Second column */
+            grid-row: 1 / 2; /* First row of the second column */
+        }
+        .bar-chart-summary-section { /* The bar chart section */
+            grid-column: 2 / 3; /* Second column */
+            grid-row: 2 / 3; /* Second row of the second column */
+        }
+
+        .graph-section { /* The line chart section */
+            grid-column: 1 / -1; /* Spans full width */
+            grid-row: 3 / 4; /* Third row, full width */
+        }
+        .table-section { /* The detailed table section */
+            grid-column: 1 / -1; /* Spans full width */
+            grid-row: 4 / 5; /* Fourth row, full width */
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 992px) {
+            .container {
+                grid-template-columns: 1fr; /* Stack all sections vertically */
+                grid-template-rows: auto; /* Reset to auto for stacking */
+                gap: 10px;
+                padding: 0 8px 10px;
+            }
+            /* Reset grid placement for smaller screens to stack naturally */
+            .input-section,
+            .summary-section:first-of-type,
+            .bar-chart-summary-section,
+            .graph-section,
+            .table-section {
+                grid-column: auto;
+                grid-row: auto;
+            }
+
+            .app-header h1 {
+                font-size: 1.2em;
+            }
+            .app-header p {
+                font-size: 0.75em;
+            }
+            .input-section,
+            .summary-section,
+            .graph-section,
+            .table-section,
+            .bar-chart-summary-section {
+                padding: 12px;
+            }
+            h2 {
+                font-size: 1.1em;
+            }
+            .btn {
+                padding: 5px 12px;
+                font-size: 0.8em;
+            }
+            /* Remove min-width from tables on smaller screens, let overflow-x handle it */
+            .summary-table,
+            .detailed-table {
+                min-width: unset; 
+            }
+            .summary-table th, .summary-table td,
+            .detailed-table th, .detailed-table td {
+                padding: 5px 8px;
+            }
+            .chart-container {
+                height: 180px;
+            }
+            .rate-scenarios-grid {
+                grid-template-columns: repeat(2, 1fr); /* Two columns on medium screens */
+                gap: 8px;
+            }
+            .tab-button {
+                padding: 5px 10px;
+                font-size: 0.7em; /* Even smaller font for tabs on medium screens */
+            }
+            .breakdown-controls {
+                flex-direction: row; /* Keep row for medium screens */
+                align-items: center;
+                gap: 5px;
+            }
+            .breakdown-controls label {
+                margin-bottom: 0;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .container {
+                padding: 0 5px 10px; /* Even less padding on smallest screens */
+            }
+            .app-header h1 {
+                font-size: 1em;
+            }
+            .app-header p {
+                font-size: 0.7em;
+            }
+            .chart-container {
+                height: 150px;
+            }
+            .form-group label {
+                font-size: 0.8em;
+            }
+            .form-group input[type="number"],
+            .radio-group label,
+            .radio-group input[type="radio"] { /* Adjust font size for radio labels too */
+                font-size: 0.8em;
+                padding: 5px 7px;
+            }
+            .btn {
+                font-size: 0.75em;
+                padding: 4px 10px;
+            }
+            .summary-table,
+            .detailed-table {
+                font-size: 0.7em;
+            }
+            .tab-button {
+                padding: 4px 8px;
+                font-size: 0.65em; /* Smallest font for tabs on small screens */
+            }
+            .rate-scenarios-grid {
+                grid-template-columns: 1fr; /* Stack rates vertically on small screens */
+            }
+            .radio-group {
+                gap: 5px; /* Smaller gap for radio buttons on small screens */
+            }
+            .breakdown-controls {
+                flex-direction: column; /* Stack vertically on small screens */
+                align-items: flex-start;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <h1>Investment Growth & Compound Interest Analyzer</h1>
+        <p>Visualize Your Financial Projections with Customizable Scenarios</p>
+        <p>Developed by Ajit Gautam</p>
+    </header>
+
+    <div class="container">
+        <!-- Input Parameters -->
+        <div class="input-section">
+            <h2>Input Parameters</h2>
+            <div class="form-group">
+                <label>Currency</label>
+                <div class="radio-group" id="currencySelect">
+                    <label><input type="radio" name="currency" value="₹" checked onchange="updateCurrencySymbol()"> INR (₹)</label>
+                    <label><input type="radio" name="currency" value="$" onchange="updateCurrencySymbol()"> USD ($)</label>
+                    <label><input type="radio" name="currency" value="€" onchange="updateCurrencySymbol()"> EUR (€)</label>
+                    <label><input type="radio" name="currency" value="£" onchange="updateCurrencySymbol()"> GBP (£)</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="principal">Initial Investment (<span id="principalCurrencySymbol">₹</span>)</label>
+                <input type="number" id="principal" value="15000000" min="0" step="1000">
+            </div>
+            <div class="form-group">
+                <label for="oneTimeContribution">One-Time Contribution (<span id="oneTimeContributionCurrencySymbol">₹</span>)</label>
+                <input type="number" id="oneTimeContribution" value="0" min="0" step="1000">
+            </div>
+            <div class="form-group">
+                <label for="monthly">Monthly Contribution (<span id="monthlyCurrencySymbol">₹</span>)</label>
+                <input type="number" id="monthly" value="200000" min="0" step="500">
+            </div>
+            <div class="form-group">
+                <label for="years">Investment Period (Years)</label>
+                <input type="number" id="years" value="10" min="1" max="50">
+            </div>
+
+            <!-- Common Compounding Frequency -->
+            <div class="form-group">
+                <label>Compounding Frequency</label>
+                <div class="radio-group" id="commonFrequency">
+                    <label><input type="radio" name="frequency" value="annual" checked> Annual</label>
+                    <label><input type="radio" name="frequency" value="monthly"> Monthly</label>
+                    <label><input type="radio" name="frequency" value="weekly"> Weekly</label>
+                    <label><input type="radio" name="frequency" value="daily"> Daily</label>
+                </div>
+            </div>
+
+            <!-- Scenario Rate Inputs (all 6 in one grid) -->
+            <div class="rate-scenarios-grid">
+                <div class="form-group">
+                    <label for="rate1">Scenario 1 Return Rate (%)</label>
+                    <div class="rate-input-group">
+                        <input type="number" id="rate1" value="10" min="0" max="100" step="0.1">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="rate2">Scenario 2 Return Rate (%)</label>
+                    <div class="rate-input-group">
+                        <input type="number" id="rate2" value="15" min="0" max="100" step="0.1">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="rate3">Scenario 3 Return Rate (%)</label>
+                    <div class="rate-input-group">
+                        <input type="number" id="rate3" value="20" min="0" max="100" step="0.1">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="rate4">Scenario 4 Return Rate (%)</label>
+                    <div class="rate-input-group">
+                        <input type="number" id="rate4" value="25" min="0" max="100" step="0.1">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="rate5">Scenario 5 Return Rate (%)</label>
+                    <div class="rate-input-group">
+                        <input type="number" id="rate5" value="30" min="0" max="100" step="0.1">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="rate6">Scenario 6 Return Rate (%)</label>
+                    <div class="rate-input-group">
+                        <input type="number" id="rate6" value="35" min="0" max="100" step="0.1">
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="calculate()">Calculate Growth</button>
+                <button class="btn btn-secondary" onclick="resetValues()">Reset Fields</button>
+            </div>
+        </div>
+
+        <!-- Combined Summary Section -->
+        <div class="summary-section">
+            <h2 id="summarySectionTitle">Current Scenario Summary</h2>
+            <div class="summary-tabs" id="summaryTabsContainer">
+                <button class="tab-button active" id="currentTabButton" onclick="displayScenario('current')">Current</button>
+                <!-- Previous scenario tabs will be dynamically added here -->
+            </div>
+
+            <div class="table-responsive"> <!-- Added for horizontal scrolling -->
+                <table class="summary-table" id="summaryTable">
+                    <thead>
+                        <tr>
+                            <th>Scenario</th>
+                            <th>Final Value</th>
+                            <th>Total Invested</th>
+                            <th>Total Contribution</th>
+                            <th>Total Interest Earned</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Summary rows will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- New Bar Chart Section for Total Invested vs. Interest Earned -->
+        <div class="summary-section bar-chart-summary-section">
+            <h2>Total Invested vs. Interest Earned</h2>
+            <div class="chart-container">
+                <canvas id="summaryBarChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Graph Section -->
+        <div class="graph-section">
+            <h2>Growth Projection Over Time</h2>
+            <div class="chart-container">
+                <canvas id="growthChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Detailed Table Section -->
+        <div class="table-section">
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="copyTable()">Copy Table</button>
+                <button class="btn btn-primary" onclick="exportExcel()">Export to CSV</button>
+            </div>
+            <h2>Detailed Breakdown</h2>
+            <div class="breakdown-controls">
+                <label>Show breakdown by:</label>
+                <button class="btn breakdown-btn active" id="btnYearly" onclick="setBreakdownType('yearly')">Yearly</button>
+                <button class="btn breakdown-btn" id="btnMonthly" onclick="setBreakdownType('monthly')">Monthly</button>
+                <button class="btn breakdown-btn" id="btnWeekly" onclick="setBreakdownType('weekly')">Weekly</button>
+                <button class="btn breakdown-btn" id="btnDaily" onclick="setBreakdownType('daily')">Daily</button>
+            </div>
+            <div class="table-responsive"> <!-- Added for horizontal scrolling -->
+                <table class="detailed-table" id="detailedTable">
+                    <thead>
+                        <tr>
+                            <th>Period</th>
+                            <th>Scenario 1 (<span class="currency-symbol">₹</span>)</th>
+                            <th>Scenario 2 (<span class="currency-symbol">₹</span>)</th>
+                            <th>Scenario 3 (<span class="currency-symbol">₹</span>)</th>
+                            <th>Scenario 4 (<span class="currency-symbol">₹</span>)</th>
+                            <th>Scenario 5 (<span class="currency-symbol">₹</span>)</th>
+                            <th>Scenario 6 (<span class="currency-symbol">₹</span>)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Detailed rows will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chart = null; // Line chart for growth over time
+        let barChart = null; // Bar chart for total invested vs. interest earned
+        let currentResults = null;
+        let scenarioHistory = []; // Array to store previous scenarios
+        const MAX_HISTORY = 5; // Store last 5 scenarios
+        let selectedCurrencySymbol = '₹'; // Default currency symbol
+        let currentBreakdownType = 'yearly'; // Default breakdown type for detailed table
+
+        // Updated chart colors to be distinct and fit green/orange theme
+        // Added two more colors for the new scenarios
+        const chartColors = ['#28a745', '#fd7e14', '#20c997', '#ffc107', '#007bff', '#6f42c1']; // Green, Orange, Light Green, Yellow-Orange, Blue, Purple
+        const barChartColors = {
+            invested: '#fd7e14', // Orange for invested
+            interest: '#28a745' // Primary Green for interest
+        };
+
+        // Constants for rate conversion and simulation
+        const DAYS_IN_YEAR = 365; // Using 365 for simpler date calculations in loops
+        const MONTHS_IN_YEAR = 12;
+        const WEEKS_IN_YEAR = 52; 
+        const DAYS_IN_WEEK = 7;
+
+        // Function to ensure all input values are valid numbers
+        function validateInputs(inputs) {
+            if (isNaN(inputs.principal) || inputs.principal < 0) {
+                alert('Please enter a valid non-negative number for Initial Investment.');
+                return false;
+            }
+            if (isNaN(inputs.oneTimeContribution) || inputs.oneTimeContribution < 0) {
+                alert('Please enter a valid non-negative number for One-Time Contribution.');
+                return false;
+            }
+            if (isNaN(inputs.monthly) || inputs.monthly < 0) {
+                alert('Please enter a valid non-negative number for Monthly Contribution.');
+                return false;
+            }
+            if (isNaN(inputs.years) || inputs.years <= 0) {
+                alert('Please enter a valid positive number for Investment Period (Years).');
+                return false;
+            }
+            for (let i = 0; i < inputs.rates.length; i++) {
+                const rateScenario = inputs.rates[i];
+                if (isNaN(rateScenario.value) || rateScenario.value < 0) {
+                    alert(`Please enter a valid non-negative number for Scenario ${i + 1} Return Rate.`);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function calculate() {
+            // Before calculating new results, store the current ones in history
+            if (currentResults) {
+                // Simplified history label
+                const historyLabel = `Prev ${scenarioHistory.length + 1}`; 
+                scenarioHistory.unshift({ // Add to the beginning (most recent first)
+                    results: currentResults,
+                    label: historyLabel
+                });
+                if (scenarioHistory.length > MAX_HISTORY) {
+                    scenarioHistory.pop(); // Remove oldest if exceeding limit
+                }
+            }
+
+            const inputs = getInputValues();
+            if (!validateInputs(inputs)) {
+                return; // Stop calculation if inputs are invalid
+            }
+            currentResults = calculateScenarios(inputs); // Store new results
+
+            updateCurrencySymbolsInTables(); // Update currency symbols in detailed table headers and input labels
+            updateSummaryTabs(); // Re-render tabs
+            displayScenario('current'); // Display current results (which also updates summary table and bar chart)
+            updateDetailedTable(currentResults); // Update detailed table with current breakdown type
+            updateChart(currentResults, inputs.years);
+        }
+
+        function getInputValues() {
+            // Get value from checked radio button for frequency
+            const commonFrequency = document.querySelector('input[name="frequency"]:checked').value;
+            return {
+                principal: parseFloat(document.getElementById('principal').value) || 0,
+                oneTimeContribution: parseFloat(document.getElementById('oneTimeContribution').value) || 0, // New input
+                monthly: parseFloat(document.getElementById('monthly').value) || 0,
+                years: parseInt(document.getElementById('years').value) || 1,
+                rates: [1, 2, 3, 4, 5, 6].map(i => ({ // Extended to 6 scenarios
+                    value: parseFloat(document.getElementById(`rate${i}`).value) / 100 || 0, // Convert percentage to decimal
+                    frequency: commonFrequency // Use the common frequency for all scenarios
+                }))
+            };
+        }
+
+        // Core calculation function - now simulates day by day
+        function calculateScenarios(inputs) {
+            const totalYears = inputs.years;
+            const totalMonthlyPeriods = totalYears * MONTHS_IN_YEAR;
+
+            return inputs.rates.map(scenario => {
+                const rateValue = scenario.value;
+                const frequency = scenario.frequency;
+
+                let effectiveDailyRate;
+                if (frequency === 'annual') {
+                    effectiveDailyRate = Math.pow(1 + rateValue, 1/DAYS_IN_YEAR) - 1;
+                } else if (frequency === 'monthly') {
+                    effectiveDailyRate = Math.pow(1 + rateValue, 1/(DAYS_IN_YEAR/MONTHS_IN_YEAR)) - 1;
+                } else if (frequency === 'weekly') {
+                    effectiveDailyRate = Math.pow(1 + rateValue, 1/DAYS_IN_WEEK) - 1;
+                } else if (frequency === 'daily') {
+                    effectiveDailyRate = rateValue;
+                } else {
+                    effectiveDailyRate = Math.pow(1 + rateValue, 1/DAYS_IN_YEAR) - 1;
+                }
+
+                let currentBalance = inputs.principal + inputs.oneTimeContribution;
+                
+                // Calculate total cash outflow upfront for `totalInvested` column
+                const totalInvestedAmount = inputs.principal + inputs.oneTimeContribution + (inputs.monthly * totalMonthlyPeriods);
+                
+                // Calculate total contributions (one-time + monthly) for the new `totalContribution` column
+                const totalContributionAmount = inputs.oneTimeContribution + (inputs.monthly * totalMonthlyPeriods);
+
+                const allDailyBalances = [];
+                const yearlyData = [];
+
+                let simulationDate = new Date();
+                let currentSimMonth = simulationDate.getMonth();
+                let currentSimYear = simulationDate.getFullYear();
+
+                for (let i = 0; i < totalMonthlyPeriods; i++) {
+                    let daysInThisMonth = new Date(currentSimYear, currentSimMonth + 1, 0).getDate();
+
+                    if (i > 0) { // Add monthly contribution after the first month's initial balance
+                        currentBalance += inputs.monthly;
+                    }
+
+                    for (let d = 0; d < daysInThisMonth; d++) {
+                        currentBalance *= (1 + effectiveDailyRate);
+                        allDailyBalances.push(currentBalance);
+                    }
+
+                    if ((i + 1) % MONTHS_IN_YEAR === 0) {
+                        yearlyData.push(currentBalance);
+                    }
+
+                    currentSimMonth++;
+                    if (currentSimMonth >= MONTHS_IN_YEAR) {
+                        currentSimMonth = 0;
+                        currentSimYear++;
+                    }
+                }
+
+                return {
+                    finalBalance: currentBalance,
+                    totalInvested: totalInvestedAmount, // Total cash outflow (initial + one-time + all monthly)
+                    totalContribution: totalContributionAmount, // One-time + all monthly contributions
+                    totalInterest: currentBalance - totalInvestedAmount, // Interest is based on total cash outflow
+                    allDailyBalances: allDailyBalances,
+                    yearlyData: yearlyData,
+                    originalRate: rateValue * 100,
+                    originalFrequency: frequency
+                };
+            });
+        }
+
+        // Function to display a specific scenario's summary in the table
+        function displayScenario(tabIdentifier) {
+            const tbody = document.querySelector('#summaryTable tbody');
+            const summaryTitle = document.getElementById('summarySectionTitle');
+            let resultsToDisplay = null;
+            let titleText = '';
+
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+
+            if (tabIdentifier === 'current') {
+                resultsToDisplay = currentResults;
+                titleText = 'Current Scenario Summary';
+                document.getElementById('currentTabButton').classList.add('active');
+            } else {
+                // tabIdentifier is an index for scenarioHistory
+                const index = parseInt(tabIdentifier);
+                if (scenarioHistory[index]) {
+                    resultsToDisplay = scenarioHistory[index].results;
+                    titleText = `Previous Scenario ${index + 1} Summary`;
+                    document.getElementById(`prevTabButton-${index}`).classList.add('active');
+                }
+            }
+
+            summaryTitle.textContent = titleText;
+            if (resultsToDisplay) {
+                tbody.innerHTML = resultsToDisplay.map((result, i) => `
+                    <tr>
+                        <td>Scenario ${i+1} (${result.originalRate.toFixed(1)}% ${result.originalFrequency.charAt(0).toUpperCase() + result.originalFrequency.slice(1)})</td>
+                        <td>${formatCurrency(result.finalBalance)}</td>
+                        <td>${formatCurrency(result.totalInvested)}</td>
+                        <td>${formatCurrency(result.totalContribution)}</td> <!-- New column data -->
+                        <td>${formatCurrency(result.totalInterest)}</td>
+                    </tr>
+                `).join('');
+                updateBarChart(resultsToDisplay); // Update bar chart when switching summary tabs
+            } else {
+                tbody.innerHTML = '<tr><td colspan="5">No data to display.</td></tr>'; // Adjusted colspan
+                updateBarChart([]); // Clear bar chart if no data
+            }
+        }
+
+        function updateSummaryTabs() {
+            const tabsContainer = document.getElementById('summaryTabsContainer');
+            // Keep the 'Current' button, remove all others
+            tabsContainer.innerHTML = '';
+            const currentButton = document.createElement('button');
+            currentButton.classList.add('tab-button');
+            currentButton.id = 'currentTabButton';
+            currentButton.textContent = 'Current';
+            currentButton.onclick = () => displayScenario('current');
+            tabsContainer.appendChild(currentButton);
+
+            scenarioHistory.forEach((entry, index) => {
+                const prevButton = document.createElement('button');
+                prevButton.classList.add('tab-button');
+                prevButton.id = `prevTabButton-${index}`;
+                prevButton.textContent = entry.label; // Use the simplified label
+                prevButton.onclick = () => displayScenario(index.toString());
+                tabsContainer.appendChild(prevButton);
+            });
+        }
+
+        function setBreakdownType(type) {
+            currentBreakdownType = type;
+            // Update active button styling
+            document.querySelectorAll('.breakdown-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn${type.charAt(0).toUpperCase() + type.slice(1)}`).classList.add('active');
+            
+            if (currentResults) {
+                updateDetailedTable(currentResults);
+            }
+        }
+
+        function updateDetailedTable(results) {
+            const tbody = document.querySelector('#detailedTable tbody');
+            let dataToDisplay = [];
+            let headerLabel = 'Period'; // Default generic label
+
+            if (!results || results.length === 0 || !results[0].allDailyBalances) {
+                tbody.innerHTML = '<tr><td colspan="'+ (results ? results.length + 1 : 7) +'">No data to display. Please adjust inputs and ensure investment period is at least 1 year.</td></tr>'; // Adjusted colspan
+                document.querySelector('#detailedTable thead th:first-child').textContent = headerLabel;
+                return;
+            }
+
+            const totalYears = getInputValues().years;
+            const totalDaysSimulated = results[0].allDailyBalances.length; // Total days from simulation
+
+            if (currentBreakdownType === 'yearly') {
+                headerLabel = 'Year';
+                for (let y = 0; y < totalYears; y++) {
+                    const row = [`Year ${y + 1}`];
+                    results.forEach(scenario => {
+                        // Get balance at the end of each year (last day of the year)
+                        // The yearlyData array already stores these, but using allDailyBalances for consistency
+                        const dayIndex = Math.min((y + 1) * DAYS_IN_YEAR - 1, totalDaysSimulated - 1);
+                        row.push(scenario.allDailyBalances[dayIndex]);
+                    });
+                    dataToDisplay.push(row);
+                }
+            } else if (currentBreakdownType === 'monthly') {
+                headerLabel = 'Month';
+                let currentDayIndex = 0;
+                let currentSimMonth = new Date().getMonth(); // Use a base month to start date calculations
+                let currentSimYear = new Date().getFullYear();
+
+                for (let y = 0; y < totalYears; y++) {
+                    for (let m = 0; m < MONTHS_IN_YEAR; m++) {
+                        const daysInThisMonth = new Date(currentSimYear + y, currentSimMonth + m + 1, 0).getDate();
+                        
+                        const startDayOfPeriod = currentDayIndex;
+                        const endDayOfPeriod = Math.min(currentDayIndex + daysInThisMonth - 1, totalDaysSimulated - 1);
+
+                        if (startDayOfPeriod <= endDayOfPeriod) {
+                            const row = [`Year ${y + 1}, Month ${m + 1}`];
+                            results.forEach(scenario => {
+                                row.push(scenario.allDailyBalances[endDayOfPeriod]);
+                            });
+                            dataToDisplay.push(row);
+                        }
+                        currentDayIndex += daysInThisMonth;
+                        if (currentDayIndex >= totalDaysSimulated) break;
+                    }
+                    if (currentDayIndex >= totalDaysSimulated) break;
+                }
+            } else if (currentBreakdownType === 'weekly') {
+                headerLabel = 'Week';
+                let currentDayIndex = 0;
+                let currentWeek = 1;
+                for (let y = 0; y < totalYears; y++) {
+                    for (let w = 0; w < WEEKS_IN_YEAR; w++) {
+                        const startDayOfPeriod = currentDayIndex;
+                        const endDayOfPeriod = Math.min(currentDayIndex + DAYS_IN_WEEK - 1, totalDaysSimulated - 1);
+                        
+                        if (startDayOfPeriod <= endDayOfPeriod) {
+                            const row = [`Year ${y + 1}, Week ${currentWeek++}`];
+                            results.forEach(scenario => {
+                                row.push(scenario.allDailyBalances[endDayOfPeriod]);
+                            });
+                            dataToDisplay.push(row);
+                        }
+                        currentDayIndex += DAYS_IN_WEEK;
+                        if (currentDayIndex >= totalDaysSimulated) break;
+                    }
+                    if (currentDayIndex >= totalDaysSimulated) break;
+                }
+            } else if (currentBreakdownType === 'daily') {
+                headerLabel = 'Day';
+                for (let d = 0; d < totalDaysSimulated; d++) {
+                    const row = [`Day ${d + 1}`];
+                    results.forEach(scenario => {
+                        row.push(scenario.allDailyBalances[d]);
+                    });
+                    dataToDisplay.push(row);
+                }
+            }
+
+            tbody.innerHTML = dataToDisplay.map(row => `
+                <tr>
+                    <td>${row[0]}</td>
+                    ${row.slice(1).map(val => `<td>${formatCurrency(val)}</td>`).join('')}
+                </tr>
+            `).join('');
+
+            document.querySelector('#detailedTable thead th:first-child').textContent = headerLabel;
+        }
+
+        function updateChart(results, years) {
+            const ctx = document.getElementById('growthChart').getContext('2d');
+            
+            if (!ctx) {
+                console.error('Could not get 2D context for growthChart');
+                return;
+            }
+
+            if (!results || results.length === 0 || !results[0].yearlyData || results[0].yearlyData.length === 0) {
+                if(chart) chart.destroy(); // Destroy existing chart if no data
+                chart = null;
+                console.log('No results for line chart, clearing.');
+                return;
+            }
+            
+            if(chart) chart.destroy();
+
+            const labels = Array.from({length: years}, (_, i) => `Year ${i + 1}`);
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: results.map((result, i) => ({
+                        label: `Scenario ${i+1} (${result.originalRate.toFixed(1)}% ${result.originalFrequency.charAt(0).toUpperCase() + result.originalFrequency.slice(1)})`,
+                        data: result.yearlyData,
+                        borderColor: chartColors[i % chartColors.length],
+                        backgroundColor: 'transparent', // No fill color for the area
+                        tension: 0.4,
+                        pointRadius: 2,
+                        pointHoverRadius: 4,
+                        fill: false, // Ensure fill is false for no area color
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += formatCurrency(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Investment Year',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Value',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                callback: value => formatCurrency(value), // Use new formatCurrency
+                                font: {
+                                    size: 10
+                                }
+                            },
+                            grid: {
+                                color: '#e9ecef'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateBarChart(results) {
+            const ctx = document.getElementById('summaryBarChart').getContext('2d');
+            
+            if (!ctx) {
+                console.error('Could not get 2D context for summaryBarChart');
+                return;
+            }
+
+            if(barChart) barChart.destroy();
+
+            if (!results || results.length === 0) {
+                barChart = null;
+                console.log('No results for bar chart, clearing.');
+                return;
+            }
+
+            const labels = results.map((_, i) => `Scenario ${i+1}`);
+            const totalInvestedData = results.map(r => r.totalInvested);
+            const totalInterestData = results.map(r => r.totalInterest);
+
+            // Function to create a linear gradient for pseudo-3D effect
+            function createGradient(chartCtx, color) {
+                const gradient = chartCtx.createLinearGradient(0, 0, 0, 200); // Vertical gradient, adjust height as needed
+                // Slightly darker shade at the top for depth
+                gradient.addColorStop(0, adjustColor(color, -20)); // Make 20% darker
+                gradient.addColorStop(1, color); // Original color at the bottom
+                return gradient;
+            }
+
+            // Helper to adjust color brightness (simple version for hex/rgb)
+            function adjustColor(color, percent) {
+                let f = parseInt(color.slice(1), 16),
+                    t = percent < 0 ? 0 : 255,
+                    p = Math.abs(percent) / 100; // Convert percentage to a 0-1 scale
+
+                const R = f >> 16;
+                const G = (f >> 8) & 0x00ff;
+                const B = f & 0x0000ff;
+
+                const newR = Math.round((t - R) * p + R);
+                const newG = Math.round((t - G) * p + G);
+                const newB = Math.round((t - B) * p + B);
+
+                // Ensure values are within 0-255
+                const clampedR = Math.min(255, Math.max(0, newR));
+                const clampedG = Math.min(255, Math.max(0, newG));
+                const clampedB = Math.min(255, Math.max(0, newB));
+
+                // Convert back to hex string, ensuring 6 characters
+                return "#" + ((1 << 24) + (clampedR << 16) + (clampedG << 8) + clampedB).toString(16).slice(1);
+            }
+
+            barChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Total Invested',
+                            data: totalInvestedData,
+                            backgroundColor: createGradient(ctx, barChartColors.invested), // Apply gradient
+                            borderColor: barChartColors.invested,
+                            borderWidth: 1,
+                            categoryPercentage: 0.6, // Adjusts the width of the category group
+                            barPercentage: 0.8 // Adjusts the width of the individual bars within the category
+                        },
+                        {
+                            label: 'Total Interest Earned',
+                            data: totalInterestData,
+                            backgroundColor: createGradient(ctx, barChartColors.interest), // Apply gradient
+                            borderColor: barChartColors.interest,
+                            borderWidth: 1,
+                            categoryPercentage: 0.6,
+                            barPercentage: 0.8
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += formatCurrency(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            title: {
+                                display: true,
+                                text: 'Scenario',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            title: {
+                                display: true,
+                                text: 'Amount',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                callback: value => formatCurrency(value), // Use new formatCurrency
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Helper to clean numbers for export/copy (remove currency, commas)
+        function cleanNumberForExport(value) {
+            if (isNaN(value)) return '';
+            return Math.round(value).toString();
+        }
+
+        function generateTableDataForExport(results, separator = '\t') {
+            let data = [];
+            const currencySymbol = selectedCurrencySymbol; // Capture current symbol for labels
+
+            // Summary Table Data - Updated headers
+            data.push(['Scenario', 'Final Value', 'Total Invested', 'Total Contribution', 'Total Interest Earned'].join(separator));
+            results.forEach((result, i) => {
+                data.push([
+                    `Scenario ${i+1} (${result.originalRate.toFixed(1)}% ${result.originalFrequency.charAt(0).toUpperCase() + result.originalFrequency.slice(1)})`,
+                    cleanNumberForExport(result.finalBalance),
+                    cleanNumberForExport(result.totalInvested),
+                    cleanNumberForExport(result.totalContribution), // New export data
+                    cleanNumberForExport(result.totalInterest)
+                ].join(separator));
+            });
+
+            // Detailed Table Data (Export all daily data, let user filter in spreadsheet)
+            // Note: For export, we always export daily data to provide maximum granularity.
+            // The user can then filter or aggregate in their spreadsheet.
+            const totalDaysSimulated = results[0].allDailyBalances.length;
+            if (totalDaysSimulated > 0) {
+                const detailedHeaders = ['Day'].concat(results.map((_, i) => `Scenario ${i+1} (${currencySymbol})`));
+                data.push('\n' + detailedHeaders.join(separator)); // Add a newline for separation
+                for(let dayIndex = 0; dayIndex < totalDaysSimulated; dayIndex++) {
+                    const dayRow = [`Day ${dayIndex + 1}`].concat(
+                        results.map(r => cleanNumberForExport(r.allDailyBalances[dayIndex]))
+                    );
+                    data.push(dayRow.join(separator));
+                }
+            }
+            return data.join('\n');
+        }
+
+        function copyTable() {
+            if (!currentResults) {
+                alert('No data to copy. Please calculate growth first.');
+                return;
+            }
+            const textToCopy = generateTableDataForExport(currentResults, '\t'); // Tab-separated for copy
+
+            navigator.clipboard.writeText(textToCopy)
+                .then(() => alert('All detailed daily data copied to clipboard successfully! (Numbers are unformatted for easy pasting into spreadsheets)'))
+                .catch(err => {
+                    console.error('Failed to copy table data:', err);
+                    alert('Failed to copy table data. Please try again or copy manually.');
+                });
+        }
+
+        function exportExcel() { // Exports as CSV, but with unformatted numbers for Excel compatibility
+            if (!currentResults) {
+                alert('No data to export. Please calculate growth first.');
+                return;
+            }
+            const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(generateTableDataForExport(currentResults, ',')); // Comma-separated for CSV
+
+            const link = document.createElement("a");
+            link.setAttribute("href", csvContent);
+            link.setAttribute("download", "investment_report.csv"); // Keep .csv for proper Excel handling
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            alert('Investment report exported to CSV! (Contains daily data, open with Excel)');
+        }
+
+        function formatCurrency(value) {
+            if (isNaN(value)) return selectedCurrencySymbol + '0';
+            const absValue = Math.abs(value);
+            const sign = value < 0 ? '-' : '';
+
+            // 1 Crore = 10,000,000
+            // 1 Lakh = 100,000
+            if (absValue >= 10000000) { // Check for 1 Crore or more (10,000,000)
+                const crores = absValue / 10000000;
+                return sign + selectedCurrencySymbol + crores.toFixed(2) + ' Cr';
+            } else if (absValue >= 100000) { // Check for 1 Lakh or more (100,000)
+                const lakhs = absValue / 100000;
+                return sign + selectedCurrencySymbol + lakhs.toFixed(2) + ' L';
+            } else {
+                return sign + selectedCurrencySymbol + absValue.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+            }
+        }
+
+        function updateCurrencySymbol() {
+            // Get value from checked radio button for currency
+            selectedCurrencySymbol = document.querySelector('input[name="currency"]:checked').value;
+            // Re-run calculate to update all displays with the new currency symbol
+            calculate(); 
+        }
+
+        function updateCurrencySymbolsInTables() {
+            // Update detailed table headers
+            document.querySelectorAll('.detailed-table th .currency-symbol').forEach(span => {
+                span.textContent = selectedCurrencySymbol;
+            });
+            // Update input field labels
+            document.getElementById('principalCurrencySymbol').textContent = selectedCurrencySymbol;
+            document.getElementById('oneTimeContributionCurrencySymbol').textContent = selectedCurrencySymbol; // New input
+            document.getElementById('monthlyCurrencySymbol').textContent = selectedCurrencySymbol;
+
+            // Also update chart axes if they exist
+            if (chart) {
+                chart.options.scales.y.ticks.callback = value => formatCurrency(value); // Use new formatCurrency
+                chart.update();
+            }
+            if (barChart) {
+                barChart.options.scales.y.ticks.callback = value => formatCurrency(value); // Use new formatCurrency
+                barChart.update();
+            }
+        }
+
+        function resetValues() {
+            document.getElementById('principal').value = 15000000; // Updated default
+            document.getElementById('oneTimeContribution').value = 0; // New default
+            document.getElementById('monthly').value = 200000; // Updated default
+            document.getElementById('years').value = 10;
+            document.getElementById('rate1').value = 10; // Updated default
+            document.getElementById('rate2').value = 15; // Updated default
+            document.getElementById('rate3').value = 20; // Updated default
+            document.getElementById('rate4').value = 25; // Updated default
+            document.getElementById('rate5').value = 30; // New default
+            document.getElementById('rate6').value = 35; // New default
+            
+            // Reset radio buttons to default checked state
+            document.querySelector('input[name="currency"][value="₹"]').checked = true;
+            document.querySelector('input[name="frequency"][value="annual"]').checked = true;
+
+            // Clear all results and history
+            currentResults = null;
+            scenarioHistory = []; // Clear history
+            document.querySelector('#summaryTable tbody').innerHTML = ''; // Clear summary table
+            document.querySelector('#detailedTable tbody').innerHTML = ''; // Clear detailed table
+            
+            updateSummaryTabs(); // Re-render tabs to show only 'Current'
+            document.getElementById('summarySectionTitle').textContent = 'Current Scenario Summary'; // Reset title
+            
+            if (chart) chart.destroy();
+            chart = null;
+            if (barChart) barChart.destroy();
+            barChart = null;
+            
+            // Reset currency symbol and then recalculate with default values
+            selectedCurrencySymbol = '₹';
+            updateCurrencySymbolsInTables(); // Ensure currency symbol is updated before breakdown/calculate
+            
+            // Reset breakdown type to yearly and update its button state
+            setBreakdownType('yearly');
+
+            calculate(); // Recalculate with default values, which will populate current summary
+        }
+
+        // Initial calculation when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCurrencySymbolsInTables(); // Set initial currency symbol in table headers and input labels
+            setBreakdownType('yearly'); // Initialize detailed table breakdown to yearly
+            calculate(); // Perform initial calculation to populate with default values
+        });
+    </script>
+</body>
+</html>
